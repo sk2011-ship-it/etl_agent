@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <server>
+        <host>localhost</host>
+        <port>8080</port>
+        <ssl enabled="true">
+            <certificate>/path/to/cert.pem</certificate>
+            <key>/path/to/key.pem</key>
+        </ssl>
+    </server>
+    <database>
+        <type>postgresql</type>
+        <connection>
+            <host>db.example.com</host>
+            <port>5432</port>
+            <name>myapp_db</name>
+            <user>admin</user>
+            <password>encrypted:ABC123</password>
+        </connection>
+        <pool>
+            <min>5</min>
+            <max>20</max>
+        </pool>
+    </database>
+    <logging>
+        <level>INFO</level>
+        <file>/var/log/app.log</file>
+    </logging>
+</configuration> 

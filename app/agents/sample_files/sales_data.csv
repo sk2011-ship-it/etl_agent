@@ -1,0 +1,6 @@
+order_id,date,store_id,customer_id,product_id,quantity,unit_price,discount_percent,total_amount,payment_method,shipping_method,status,delivery_date,region,country,city,postal_code,promotion_code,customer_segment,product_category,brand,season,campaign_id,sales_channel,return_reason,satisfaction_score
+ORD-001,2024-01-01,ST001,CUST123,P1001,2,299.99,10,539.98,credit_card,standard,delivered,2024-01-05,Northeast,USA,New York,10001,NEWYEAR24,Premium,Furniture,ErgoMax,Winter,CAMP_001,online,null,4.5
+ORD-002,2024-01-01,ST002,CUST124,P1002,1,159.99,0,159.99,paypal,express,delivered,2024-01-03,West,USA,Los Angeles,90001,null,Standard,Electronics,TechPro,Winter,CAMP_001,online,null,5
+ORD-003,2024-01-02,ST001,CUST125,P1003,3,49.99,15,127.47,debit_card,standard,delivered,2024-01-06,South,USA,Miami,33101,WINTER24,Standard,Accessories,AccessCo,Winter,CAMP_001,store,null,4
+ORD-004,2024-01-02,ST003,CUST126,P1001,1,299.99,0,299.99,credit_card,express,returned,2024-01-04,Midwest,USA,Chicago,60601,null,Premium,Furniture,ErgoMax,Winter,CAMP_001,online,defective,2
+ORD-005,2024-01-03,ST002,CUST127,P1004,2,79.99,20,127.98,gift_card,standard,delivered,2024-01-07,West,USA,Seattle,98101,SAVE20,Standard,Home,HomePlus,Winter,CAMP_001,store,null,5 

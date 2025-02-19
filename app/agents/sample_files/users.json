@@ -1,0 +1,28 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "name": "John Doe",
+      "email": "john@example.com",
+      "preferences": {
+        "theme": "dark",
+        "notifications": true,
+        "languages": ["en", "es"]
+      },
+      "lastLogin": "2024-03-15T10:30:00Z",
+      "isActive": true
+    },
+    {
+      "id": 2,
+      "name": "Jane Smith",
+      "email": "jane@example.com",
+      "preferences": {
+        "theme": "light",
+        "notifications": false,
+        "languages": ["en", "fr"]
+      },
+      "lastLogin": "2024-03-14T15:45:00Z",
+      "isActive": true
+    }
+  ]
+} 

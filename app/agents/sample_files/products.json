@@ -1,0 +1,50 @@
+{
+  "products": [
+    {
+      "id": "P1001",
+      "name": "Ergonomic Office Chair",
+      "category": "Furniture",
+      "price": {
+        "amount": 299.99,
+        "currency": "USD"
+      },
+      "specifications": {
+        "dimensions": {
+          "width": 60,
+          "height": 120,
+          "depth": 65,
+          "unit": "cm"
+        },
+        "weight": {
+          "value": 15.5,
+          "unit": "kg"
+        },
+        "materials": ["mesh", "aluminum", "plastic"],
+        "colors": ["black", "gray", "blue"]
+      },
+      "inventory": {
+        "inStock": 45,
+        "warehouses": [
+          {
+            "id": "WH-NY",
+            "location": "New York",
+            "quantity": 20
+          },
+          {
+            "id": "WH-LA",
+            "location": "Los Angeles",
+            "quantity": 25
+          }
+        ]
+      },
+      "ratings": [
+        {
+          "userId": "U789",
+          "score": 4.5,
+          "review": "Very comfortable",
+          "date": "2024-03-10"
+        }
+      ]
+    }
+  ]
+} 

@@ -5,27 +5,18 @@ import Markdown from "react-markdown";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import mammoth from "mammoth";
-
-interface ApiResponse {
-  message: string;
-}
+import { Loader2 } from "lucide-react";
 
 export default function Main() {
   const [requestData, setRequestData] = useState<string>("");
   const [fileData, setFileData] = useState<File | null>(null);
-  const [responseData, setResponseData] = useState<
-    { message: string; isUser: boolean }[]
-  >([]);
+  const [responseData, setResponseData] = useState<{ message: string; isUser: boolean }[]>([]);
+  const [isStreaming, setIsStreaming] = useState(false);
   const { toast } = useToast();
 
   const handleResponse = async () => {
-    // if (fileData) {
-    //   console.log("Please enter some text.");
-    //   return;
-    // }
-
     try {
-      // Sending the user message to the server
+      setIsStreaming(true);
       const response = await fetch(`/api/analysis`, {
         method: "POST",
         headers: {
@@ -34,20 +25,87 @@ export default function Main() {
         body: JSON.stringify({ message: requestData }),
       });
 
-      // Parsing the server's response
-      const data: ApiResponse = await response.json();
+      if (!response.body) {
+        throw new Error("No response body");
+      }
 
-      // Add the user's message and the AI's response
-      setResponseData((prev) => [
-        ...prev,
-        { message: requestData, isUser: true }, // User message
-        { message: data.message, isUser: false }, // AI response
-      ]);
-      setFileData(null); // clear the fileData state
-      setRequestData(""); // Clear the textarea after sending
-      console.log(data);
+      // Add user message
+      setResponseData((prev) => [...prev, { message: requestData, isUser: true }]);
+      // Create temporary message for AI response
+      setResponseData((prev) => [...prev, { message: "", isUser: false }]);
+
+      const reader = response.body.getReader();
+      let currentMessage = "";
+      let buffer = "";
+
+      const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+      const appendToMessage = async (text: string) => {
+        buffer += text;
+        const words = buffer.split(/(\s+)/);
+
+        // Process each complete word
+        while (words.length > 1) {
+          const word = words.shift() || "";
+          const space = words.shift() || "";
+
+          currentMessage += word + space;
+
+          // Update UI with slight delay for word-by-word effect
+          await delay(50); // 50ms delay between words
+
+          setResponseData((prev) => {
+            const newData = [...prev];
+            newData[newData.length - 1] = {
+              message: currentMessage,
+              isUser: false,
+            };
+            return newData;
+          });
+        }
+
+        // Keep any remaining partial word in the buffer
+        buffer = words.join("");
+      };
+
+      while (true) {
+        const { done, value } = await reader.read();
+
+        if (done) {
+          // Append any remaining text in the buffer
+          if (buffer) {
+            await appendToMessage(buffer + " ");
+          }
+          console.log("Stream complete");
+          break;
+        }
+
+        const chunk = new TextDecoder().decode(value);
+        const lines = chunk.split('\n');
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              await appendToMessage(data.message);
+            } catch (e) {
+              console.error('Error parsing SSE data:', e);
+            }
+          }
+        }
+      }
+
+      setFileData(null);
+      setRequestData("");
     } catch (error) {
-      console.error("Error making the POST request:", error);
+      console.error("Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to get response from server",
+        variant: "destructive",
+      });
+    } finally {
+      setIsStreaming(false);
     }
   };
 
@@ -103,38 +161,54 @@ export default function Main() {
   console.log(requestData, "requestData");
 
   return (
-    <>
-      <div className="flex flex-col h-screen justify-between">
-        {/* chat mapping div */}
-        <div className="flex-grow overflow-y-auto p-4">
-          {responseData.map((item, key) => (
-            <div
-              key={key}
-              className={`flex ${
-                item.isUser ? "justify-end" : "justify-start"
-              } p-2`}
-            >
-              <div
-                className={`p-3 rounded-lg ${
-                  item.isUser
-                    ? "bg-gray-500 text-white" // User messages (right side)
-                    : "bg-gray-200 text-gray-800" // AI responses (left side)
-                }`}
-              >
-                <Markdown>{item.message}</Markdown>
-              </div>
-            </div>
-          ))}
-        </div>
+    <div className="flex flex-col h-screen bg-gray-50">
+      {/* Header */}
+      <div className="border-b bg-white p-4">
+        <h1 className="text-xl font-semibold text-gray-800">Schema Discovery Agent</h1>
+      </div>
 
-        {/* Input Section */}
-        <div className="flex gap-2 p-4 shadow-md border-t border-gray-300">
-          <div className="w-10">
+      {/* Chat Area */}
+      <div className="flex-grow overflow-y-auto p-4 space-y-4">
+        {responseData.map((item, key) => (
+          <div key={key} className={`flex ${item.isUser ? "justify-end" : "justify-start"} animate-fade-in`}>
+            <div className={`max-w-[80%] rounded-lg shadow-sm ${item.isUser
+                ? "bg-gray-500 p-2 text-white"
+                : "bg-white border p-4 border-gray-200"
+                }`}
+            >
+              {/* Avatar and message container */}
+              <div className="flex items-start gap-3">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center 
+                  ${item.isUser ? "bg-gray-700" : "bg-gray-100"}`}>
+                  {item.isUser ? "U" : "AI"}
+                </div>
+                <div className="flex-1">
+                  <Markdown
+                    className={`prose ${item.isUser ? "prose-invert" : ""} max-w-none`}
+                  >
+                    {item.message}
+                  </Markdown>
+                </div>
+              </div>
+              {!item.isUser && isStreaming && key === responseData.length - 1 && (
+                <div className="mt-2 flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-gray-500">AI is thinking...</span>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Input Section */}
+      <div className="border-t bg-white p-4">
+        <div className="max-w-4xl mx-auto flex gap-3">
+          <div className="flex-shrink-0">
             <label
               htmlFor="picture"
-              className="flex justify-center items-center cursor-pointer w-full h-9 border-2 border-gray-300 rounded-lg"
-            >
-              <span className="text-2xl text-gray-500">+</span>
+              className="flex justify-center items-center cursor-pointer w-10 h-10 rounded-full border-2">
+              <span className="text-xl text-gray-500">+</span>
               <Input
                 id="picture"
                 type="file"
@@ -143,16 +217,25 @@ export default function Main() {
               />
             </label>
           </div>
-          <Input
-            placeholder="Type your message here..."
-            value={fileData ? "" : requestData}
-            onChange={(e) => setRequestData(e.target.value)}
-          />
-          <Button variant="secondary" onClick={handleResponse}>
-            Submit
-          </Button>
+          <div className="flex-1 flex gap-2">
+            <Input
+              placeholder="Type your message here..."
+              value={fileData ? "" : requestData}
+              onChange={(e) => setRequestData(e.target.value)}
+              disabled={isStreaming}
+            />
+            <Button
+              variant="default"
+              onClick={handleResponse}
+              disabled={isStreaming || !requestData.trim()}
+              className={`px-6 ${isStreaming ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isStreaming ? (<Loader2 className="h-4 w-4 animate-spin" />)
+                : ('Send')}
+            </Button>
+          </div>
         </div>
       </div>
-    </>
+    </div>
   );
 }

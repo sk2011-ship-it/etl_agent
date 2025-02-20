@@ -225,6 +225,7 @@ async function runSchemaDiscoveryAgent(initialMessage: string): Promise<string |
                     : (assistantMessage.content as ChatCompletionContentPart[])[0].type === 'text' 
                         ? (assistantMessage.content as ChatCompletionContentPart & { text: string }).text
                         : JSON.stringify(assistantMessage.content[0]);
+                        console.log("content",content);
                 return content;
             }
             step++;
@@ -257,9 +258,11 @@ async function startInteraction() {
 
             while (true) {  // Inner loop for conversation
                 const questionToAsk = await runSchemaDiscoveryAgent(userInput);
+                console.log("Question to ask:", questionToAsk);
                 if (!questionToAsk) break;  // No more questions to ask
                 
                 const response = await getUserInput(questionToAsk);
+                console.log("Response:", response);
                 if (response.toLowerCase() === "exit") return;
                 
                 // Find the last tool call that was ask_human
@@ -270,6 +273,7 @@ async function startInteraction() {
                 
                 if (lastToolCall && 'tool_call_id' in lastToolCall) {
                     // Update the pending tool response
+                    console.log("Updating tool response:", response)
                     currentMessages = currentMessages.map(msg => 
                         msg === lastToolCall 
                             ? { ...msg, content: JSON.stringify({ response }) }
@@ -279,6 +283,7 @@ async function startInteraction() {
                 
                 // Add the response as a user message
                 currentMessages.push({ role: "user", content: response });
+                console.log("Messages after response:", currentMessages);
             }
         }
     } catch (error) {

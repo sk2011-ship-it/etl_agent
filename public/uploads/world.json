@@ -1,0 +1,4 @@
+{
+  "uploadPath": "/uploads",
+  "maxFilesPerUpload": 10
+}

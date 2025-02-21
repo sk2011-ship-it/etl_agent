@@ -1,50 +1,76 @@
 {
   "products": [
     {
-      "id": "P1001",
-      "name": "Ergonomic Office Chair",
+      "product_id": "P1001",
+      "name": "ErgoMax Office Chair",
       "category": "Furniture",
-      "price": {
-        "amount": 299.99,
-        "currency": "USD"
-      },
+      "brand": "ErgoMax",
+      "description": "Premium ergonomic office chair with lumbar support",
+      "base_price": 299.99,
       "specifications": {
-        "dimensions": {
-          "width": 60,
-          "height": 120,
-          "depth": 65,
-          "unit": "cm"
-        },
-        "weight": {
-          "value": 15.5,
-          "unit": "kg"
-        },
-        "materials": ["mesh", "aluminum", "plastic"],
-        "colors": ["black", "gray", "blue"]
+        "weight": "25kg",
+        "dimensions": "65x75x120cm",
+        "color": "Black",
+        "material": "Mesh and Metal"
       },
-      "inventory": {
-        "inStock": 45,
-        "warehouses": [
-          {
-            "id": "WH-NY",
-            "location": "New York",
-            "quantity": 20
-          },
-          {
-            "id": "WH-LA",
-            "location": "Los Angeles",
-            "quantity": 25
-          }
-        ]
+      "stock_level": 50,
+      "supplier_id": "SUP001",
+      "warranty_months": 24,
+      "tags": ["office", "ergonomic", "furniture", "chair"]
+    },
+    {
+      "product_id": "P1002",
+      "name": "TechPro Wireless Headphones",
+      "category": "Electronics",
+      "brand": "TechPro",
+      "description": "Noise-cancelling wireless headphones with 30-hour battery life",
+      "base_price": 159.99,
+      "specifications": {
+        "weight": "280g",
+        "battery_life": "30 hours",
+        "color": "Silver",
+        "connectivity": "Bluetooth 5.0"
       },
-      "ratings": [
-        {
-          "userId": "U789",
-          "score": 4.5,
-          "review": "Very comfortable",
-          "date": "2024-03-10"
-        }
-      ]
+      "stock_level": 75,
+      "supplier_id": "SUP002",
+      "warranty_months": 12,
+      "tags": ["electronics", "audio", "wireless", "headphones"]
+    },
+    {
+      "product_id": "P1003",
+      "name": "AccessCo Laptop Stand",
+      "category": "Accessories",
+      "brand": "AccessCo",
+      "description": "Adjustable aluminum laptop stand with cooling design",
+      "base_price": 49.99,
+      "specifications": {
+        "weight": "850g",
+        "dimensions": "25x25x15cm",
+        "color": "Silver",
+        "material": "Aluminum"
+      },
+      "stock_level": 120,
+      "supplier_id": "SUP003",
+      "warranty_months": 12,
+      "tags": ["accessories", "laptop", "ergonomic", "cooling"]
+    },
+    {
+      "product_id": "P1004",
+      "name": "HomePlus Smart Bulb Set",
+      "category": "Home",
+      "brand": "HomePlus",
+      "description": "Set of 2 smart LED bulbs with mobile app control",
+      "base_price": 79.99,
+      "specifications": {
+        "wattage": "9W",
+        "lumens": "800",
+        "color": "Multi-color",
+        "connectivity": "WiFi"
+      },
+      "stock_level": 90,
+      "supplier_id": "SUP004",
+      "warranty_months": 24,
+      "tags": ["smart home", "lighting", "LED", "wireless"]
     }
   ]
 } 

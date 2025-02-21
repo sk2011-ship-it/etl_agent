@@ -174,4 +174,97 @@ export async function understand_schema(content: string, file_type: string) {
         console.error('Error analyzing schema:', error);
         throw error;
     }
+}
+
+export async function display_file_content(filename: string, data_points?: string[]) {
+  try {
+    const fileSizeInfo = await get_file_size(filename);
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    let content = '';
+    let dataPointsFound: Record<string, any> = {};
+
+    // Read file in chunks
+    for (let byteStart = 0; byteStart < fileSizeInfo.size_bytes; byteStart += chunkSize) {
+      const chunk = await get_file_content_low_level(filename, {
+        byte_start: byteStart,
+        byte_length: Math.min(chunkSize, fileSizeInfo.size_bytes - byteStart)
+      });
+
+      content += chunk;
+
+      // If data points are specified, look for them in the content
+      if (data_points) {
+        for (const point of data_points) {
+          // Simple pattern matching - you might want to enhance this
+          const regex = new RegExp(`${point}[\\s]*:[\\s]*([^\\n]+)`, 'i');
+          const match = chunk.content.match(regex);
+          if (match) {
+            dataPointsFound[point] = match[1].trim();
+          }
+        }
+      }
+    }
+
+    return {
+      content: content.substring(0, 1000) + (content.length > 1000 ? '...' : ''), // First 1000 chars
+      dataPoints: dataPointsFound,
+      totalSize: fileSizeInfo,
+      analyzedPoints: Object.keys(dataPointsFound).length
+    };
+  } catch (error) {
+    throw new Error(`Error displaying file content: ${error}`);
+  }
+}
+
+export async function analyze_file_content(filename: string, schema: string) {
+  try {
+    const fileSizeInfo = await get_file_size(filename);
+    const chunkSize = 1024 * 1024; // 1MB chunks
+    let content = '';
+    
+    // First read a small sample
+    const initialChunk = await get_file_content_low_level(filename, {
+      byte_start: 0,
+      byte_length: Math.min(chunkSize, fileSizeInfo.size_bytes)
+    });
+    
+    // If file is large, read more
+    if (fileSizeInfo.size_bytes > chunkSize) {
+      const additionalChunk = await get_file_content_low_level(filename, {
+        byte_start: chunkSize,
+        byte_length: Math.min(chunkSize, fileSizeInfo.size_bytes - chunkSize)
+      });
+      content = initialChunk.content + additionalChunk.content;
+    } else {
+      content = initialChunk.content;
+    }
+
+    // Deep analysis using GPT-4
+    const completion = await schemaAI.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{
+        role: "user",
+        content: `Given this schema: ${schema}
+        
+Analyze this ${initialChunk.file_type.toUpperCase()} content and provide:
+1. How well the content matches the schema
+2. Key components or sections found
+3. Important patterns or relationships
+4. Any deviations from the schema or anomalies
+
+Content: ${content}`
+      }],
+      temperature: 0.1,
+    });
+
+    const deepAnalysis = completion.choices[0].message.content;
+
+    return {
+      content: content.substring(0, 2000) + (content.length > 2000 ? '...' : ''),
+      analysis: deepAnalysis,
+      totalSize: fileSizeInfo
+    };
+  } catch (error) {
+    throw new Error(`Error analyzing file content: ${error}`);
+  }
 } 

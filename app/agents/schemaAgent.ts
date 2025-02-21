@@ -8,6 +8,7 @@ import {
   understand_schema,
   display_file_content,
   analyze_file_content,
+  merge_data,
 } from "./execute";
 
 export const systemMessage = `You are a Schema Discovery Agent that helps users understand file structures.
@@ -35,7 +36,22 @@ You have these tools:
 - understand_schema: Analyzes content to determine schema
 - analyze_file_content: Takes a filename and schema, provides detailed analysis of how the content matches the schema
 - display_file_content: Displays file content with key data points
+- merge_data: Intelligently merges two data files by:
+  1. First analyzing and understanding both files' schemas
+  2. Identifying potential matching fields between the schemas
+  3. Using GPT-4 to intelligently merge the data based on:
+     - Schema compatibility
+     - Content format and structure
+     - Common fields or relationships
+     - Data types and formats
+  4. Returns either merged data or explanation why merge isn't possible
 - ask_human: Ask a question to the human user and get their response
+
+When using merge_data:
+1. First use understand_schema on both files to get their schemas
+2. Then use get_file_content_low_level to get the content
+3. Pass both schemas and contents to merge_data
+4. Review the merge results or error message
 
 When analyzing:
 - First discover the schema using understand_schema
@@ -111,6 +127,16 @@ export async function runSchemaDiscoveryAgent(
                 break;
               case "analyze_file_content":
                 result = await analyze_file_content(args.filename, args.schema);
+                break;
+              case "merge_data":
+                result = await merge_data(
+                  args.file1, 
+                  args.file2,
+                  args.schema1,
+                  args.schema2,
+                  args.content1,
+                  args.content2
+                );
                 break;
               case "ask_human":
                 currentMessages.push({

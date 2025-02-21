@@ -267,4 +267,68 @@ Content: ${content}`
   } catch (error) {
     throw new Error(`Error analyzing file content: ${error}`);
   }
+}
+
+export async function merge_data(
+  file1: string,
+  file2: string,
+  schema1: any,
+  schema2: any,
+  content1: string,
+  content2: string
+): Promise<any> {
+  try {
+    // Use GPT-4 to analyze and merge the data
+    const completion = await schemaAI.chat.completions.create({
+      model: "gpt-4o",
+      messages: [{
+        role: "user",
+        content: `You are a data merging expert. Analyze and merge these two datasets:
+
+File 1 (${file1}):
+Schema: ${JSON.stringify(schema1, null, 2)}
+Content Sample: ${content1.substring(0, 1000)}${content1.length > 1000 ? '...' : ''}
+
+File 2 (${file2}):
+Schema: ${JSON.stringify(schema2, null, 2)}
+Content Sample: ${content2.substring(0, 1000)}${content2.length > 1000 ? '...' : ''}
+
+Please:
+1. Analyze both schemas and identify common/matching fields
+2. Determine if and how these datasets can be meaningfully merged
+3. If merge is possible:
+   - Identify the best matching fields to use as keys
+   - Explain how the data should be combined
+   - Provide the merged data structure
+4. If merge is not possible, explain why in detail
+
+Return your response as a JSON object with these fields:
+- canMerge: boolean
+- reason: string (explanation of merge possibility or impossibility)
+- matchingFields: string[] (if found)
+- mergeStrategy: string (if applicable)
+- mergedData: array (if merge successful)
+- errors: string[] (if any issues found)
+`
+      }],
+      temperature: 0.1,
+      response_format: { type: "json_object" }
+    });
+
+    const analysisResult = JSON.parse(completion.choices[0].message.content || "{}");
+
+    // Return the analysis results
+    return {
+      file1: file1,
+      file2: file2,
+      analysis: analysisResult,
+      success: analysisResult.canMerge
+    };
+  } catch (error) {
+    return {
+      error: `Error merging data: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      file1,
+      file2
+    };
+  }
 } 

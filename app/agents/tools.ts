@@ -145,4 +145,40 @@ export const tools: ChatCompletionTool[] = [{
             required: ["filename", "schema"]
         }
     }
+}, {
+    type: "function",
+    function: {
+        name: "merge_data",
+        description: "Intelligently merges two data files using GPT-4 analysis",
+        parameters: {
+            type: "object",
+            properties: {
+                file1: {
+                    type: "string",
+                    description: "Path to the first file"
+                },
+                file2: {
+                    type: "string",
+                    description: "Path to the second file"
+                },
+                schema1: {
+                    type: "object",
+                    description: "Schema of the first file"
+                },
+                schema2: {
+                    type: "object",
+                    description: "Schema of the second file"
+                },
+                content1: {
+                    type: "string",
+                    description: "Content of the first file"
+                },
+                content2: {
+                    type: "string",
+                    description: "Content of the second file"
+                }
+            },
+            required: ["file1", "file2", "schema1", "schema2", "content1", "content2"]
+        }
+    }
 }]; 

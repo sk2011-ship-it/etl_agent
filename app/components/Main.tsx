@@ -1,9 +1,12 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import Markdown from "react-markdown";
 import { useChat } from "@/app/hooks/useChat";
 import { useEffect, useState, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { FileControls } from "./chat/FileControls";
+import { ChatInput } from "./chat/ChatInput";
+import { FileViewer } from "./FileViewer";
+import { ChatMessage } from "./chat/ChatMessage";
+import { StepsList } from "./chat/StepsList";
 
 type StepItem = {
   type: 'step';
@@ -21,18 +24,23 @@ type MessageItem = {
 type CombinedItem = StepItem | MessageItem;
 
 export default function Main() {
-  const { 
-    requestData, 
-    setRequestData, 
-    responseData, 
+  const {
+    requestData,
+    setRequestData,
+    responseData,
     currentSteps,
-    handleResponse, 
-    isProcessing 
+    handleResponse,
+    isProcessing
   } = useChat();
   const [initialized, setInitialized] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [fileViewerOpen, setFileViewerOpen] = useState(false);
+  const [selectedFileContent, setSelectedFileContent] = useState("");
+  const [selectedFileName, setSelectedFileName] = useState("");
+  const [fileData, setFileData] = useState<File | null>(null);
+  const [savedFiles, setSavedFiles] = useState<string[]>([]);
+  const { toast } = useToast();
 
-  // Helper to determine if we should show steps after this message
   const shouldShowStepsAfter = (index: number) => {
     return index === responseData.length - 1 && responseData[index].role === 'user';
   };
@@ -55,7 +63,108 @@ export default function Main() {
   const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === "Enter") {
       handleResponse();
-      setRequestData(""); // Clear the text field
+      setRequestData("");
+    }
+  };
+
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      const files = Array.from(event.target.files);
+      const allowedExtensions = ['.docx', '.json', '.csv', '.xml'];
+
+      // Check all files first
+      const invalidFiles = files.filter(file => {
+        const fileExtension = '.' + file.name.split('.').pop()?.toLowerCase();
+        return !allowedExtensions.includes(fileExtension);
+      });
+
+      if (invalidFiles.length > 0) {
+        toast({
+          title: "Unsupported file type",
+          description: `Only .docx, .json, .csv, and .xml files are allowed.`,
+        });
+        return;
+      }
+
+      let successfulUploads = 0;
+
+      try {
+        for (const file of files) {
+          if (file.size > 10 * 1024 * 1024) {
+            toast({
+              title: "File too large",
+              description: `${file.name} is larger than 10MB`,
+            });
+            continue;
+          }
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          const response = await fetch('/api/upload', {
+            method: 'POST',
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to upload ${file.name}`);
+          }
+
+          setFileData(file);
+          successfulUploads++;
+        }
+
+        if (successfulUploads > 0) {
+          toast({
+            title: "Files uploaded",
+            description: `Successfully uploaded ${successfulUploads} ${successfulUploads === 1 ? 'file' : 'files'}`,
+          });
+        }
+
+      } catch (error) {
+        console.error("Error uploading files:", error);
+        toast({
+          title: "Error",
+          description: "Failed to upload one or more files",
+        });
+      }
+    }
+  };
+
+  const fetchSavedFiles = async () => {
+    try {
+      const response = await fetch('/api/list-files');
+      if (response.ok) {
+        const data = await response.json();
+        setSavedFiles(data.files);
+      }
+    } catch (error) {
+      console.error('Error fetching files:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch saved files",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFileClick = async (filename: string) => {
+    try {
+      const response = await fetch(`/api/read-file?filename=${encodeURIComponent(filename)}`);
+      if (!response.ok) {
+        throw new Error('Failed to read file');
+      }
+      const data = await response.json();
+      setSelectedFileContent(data.content);
+      setSelectedFileName(filename);
+      setFileViewerOpen(true);
+    } catch (error) {
+      console.error('Error reading file:', error);
+      toast({
+        title: "Error",
+        description: "Failed to read file content",
+        variant: "destructive",
+      });
     }
   };
 
@@ -65,37 +174,9 @@ export default function Main() {
         <div className="flex-grow overflow-y-auto p-4">
           {responseData.map((message, index) => (
             <div key={`message-container-${index}`}>
-              <div
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"} p-2`}
-              >
-                <div
-                  className={`p-3 rounded-lg ${
-                    message.role === "user"
-                      ? "bg-gray-500 text-white"
-                      : "bg-gray-200 text-gray-800"
-                  }`}
-                >
-                  <Markdown>{message.content}</Markdown>
-                </div>
-              </div>
-              
-              {/* Show steps only after the last user message */}
+              <ChatMessage role={message.role} content={message.content} />
               {shouldShowStepsAfter(index) && currentSteps.length > 0 && (
-                <div className="space-y-1 my-2">
-                  {currentSteps.map((step, stepIndex) => (
-                    <div
-                      key={`step-${stepIndex}`}
-                      className="flex justify-start p-2"
-                    >
-                      <div className="p-3 rounded-lg bg-gray-100 text-gray-800 text-sm italic max-w-[80%] opacity-75">
-                        <div className="flex items-center gap-2">
-                          <span className="text-gray-500">•</span>
-                          <span>{step}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+                <StepsList steps={currentSteps} />
               )}
             </div>
           ))}
@@ -103,22 +184,29 @@ export default function Main() {
         </div>
 
         <div className="flex gap-2 p-4 shadow-md border-t border-gray-300">
-          <Input
-            placeholder="Type your message here..."
+          <FileControls
+            onFileUpload={handleFileUpload}
+            onFileView={fetchSavedFiles}
+            savedFiles={savedFiles}
+            onFileClick={handleFileClick}
+          />
+          <ChatInput
+            placeholder={"Type your message here..."}
             value={requestData}
             onChange={(e) => setRequestData(e.target.value)}
             onKeyDown={handleKeyDown}
+            onSubmit={handleResponse}
             disabled={isProcessing}
+            isProcessing={isProcessing}
           />
-          <Button 
-            variant="secondary" 
-            onClick={handleResponse}
-            disabled={isProcessing}
-          >
-            {isProcessing ? 'Processing...' : 'Submit'}
-          </Button>
         </div>
       </div>
+      <FileViewer
+        isOpen={fileViewerOpen}
+        onClose={() => setFileViewerOpen(false)}
+        content={selectedFileContent}
+        filename={selectedFileName}
+      />
     </>
   );
 }

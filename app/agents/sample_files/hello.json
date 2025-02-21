@@ -1,0 +1,4 @@
+{
+  "allowedTypes": [".txt", ".doc", ".docx", ".pdf", ".csv"],
+  "maxSize": 10485760
+}

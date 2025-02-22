@@ -285,69 +285,69 @@ export async function merge_data(
         role: "user",
         content: `You are a data merging expert. Analyze and merge these two datasets:
 
-File 1 (${file1}):
-Schema: ${JSON.stringify(schema1, null, 2)}
-Content Sample: ${content1.substring(0, 1000)}${content1.length > 1000 ? '...' : ''}
+      File 1 (${file1}):
+      Schema: ${JSON.stringify(schema1, null, 2)}
+      Content Sample: ${content1.substring(0, 1000)}${content1.length > 1000 ? '...' : ''}
 
-File 2 (${file2}):
-Schema: ${JSON.stringify(schema2, null, 2)}
-Content Sample: ${content2.substring(0, 1000)}${content2.length > 1000 ? '...' : ''}
+      File 2 (${file2}):
+      Schema: ${JSON.stringify(schema2, null, 2)}
+      Content Sample: ${content2.substring(0, 1000)}${content2.length > 1000 ? '...' : ''}
 
-Follow these steps for analysis and merging:
+      Follow these steps for analysis and merging:
 
-1. Schema Analysis:
-   - List all fields from both datasets
-   - Identify data types of each field
-   - Find exact and similar field names
-   - Detect nested structures and arrays
+      1. Schema Analysis:
+        - List all fields from both datasets
+        - Identify data types of each field
+        - Find exact and similar field names
+        - Detect nested structures and arrays
 
-2. Data Compatibility Check:
-   - Compare field values and formats
-   - Identify primary keys and unique identifiers
-   - Check for data type conflicts
-   - Validate value ranges and patterns
+      2. Data Compatibility Check:
+        - Compare field values and formats
+        - Identify primary keys and unique identifiers
+        - Check for data type conflicts
+        - Validate value ranges and patterns
 
-3. Merge Strategy:
-   - Define primary joining keys
-   - Handle duplicate field names
-   - Resolve data type conflicts
-   - Specify field mapping rules
-   - Determine array merging approach
+      3. Merge Strategy:
+        - Define primary joining keys
+        - Handle duplicate field names
+        - Resolve data type conflicts
+        - Specify field mapping rules
+        - Determine array merging approach
 
-4. Data Transformation:
-   - Create unified field names
-   - Convert data types if needed
-   - Normalize date formats
-   - Handle missing values
+      4. Data Transformation:
+        - Create unified field names
+        - Convert data types if needed
+        - Normalize date formats
+        - Handle missing values
 
-Return a detailed JSON response with:
-{
-  "canMerge": boolean,
-  "reason": "detailed explanation",
-  "matchingFields": ["field1", "field2"],
-  "mergeStrategy": {
-    "primaryKey": "field_name",
-    "fieldMapping": {
-      "source_field": "target_field"
-    },
-    "transformRules": {
-      "field": "transformation_rule"
-    }
-  },
-  "mergedData": [
-    // Combined data with transformed fields
-  ],
-  "errors": [
-    // Any issues found during analysis
-  ]
-}
+      Return a detailed JSON response with:
+      {
+        "canMerge": boolean,
+        "reason": "detailed explanation",
+        "matchingFields": ["field1", "field2"],
+        "mergeStrategy": {
+          "primaryKey": "field_name",
+          "fieldMapping": {
+            "source_field": "target_field"
+          },
+          "transformRules": {
+            "field": "transformation_rule"
+          }
+        },
+        "mergedData": [
+          // Combined data with transformed fields
+        ],
+        "errors": [
+          // Any issues found during analysis
+        ]
+      }
 
-Ensure the merged output:
-- Maintains data integrity
-- Preserves all relevant information
-- Uses consistent naming
-- Handles nested structures properly
-- Includes all unique fields from both sources`
+      Ensure the merged output:
+      - Maintains data integrity
+      - Preserves all relevant information
+      - Uses consistent naming
+      - Handles nested structures properly
+      - Includes all unique fields from both sources`
       }],
       temperature: 0.1,
       response_format: { type: "json_object" }

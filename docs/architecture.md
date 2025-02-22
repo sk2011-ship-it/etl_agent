@@ -1,4 +1,3 @@
-```markdown
 # Agents Architecture: Comprehensive Documentation
 
 ## Overview
@@ -433,4 +432,3 @@ The Schema Discovery Agent, implemented in `schemaAgent.ts`, is the central coor
 In essence, the Schema Discovery Agent acts as a sophisticated intermediary between the user, the powerful GPT model, and a set of specialized tools. It leverages the GPT model's language understanding and reasoning abilities to orchestrate data analysis tasks, using tools to perform concrete actions and provide the GPT model with necessary information to generate intelligent and helpful responses for the user.
 
 This detailed documentation should provide a comprehensive understanding of the Agents Architecture, its components, and how they work together. Let me know if you have any further questions or specific areas you'd like to explore in more detail!
-```

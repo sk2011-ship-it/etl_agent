@@ -78,6 +78,8 @@ export default function Main() {
         return !allowedExtensions.includes(fileExtension);
       });
 
+      console.log(invalidFiles, 'invalidFiles')
+
       if (invalidFiles.length > 0) {
         toast({
           title: "Unsupported file type",

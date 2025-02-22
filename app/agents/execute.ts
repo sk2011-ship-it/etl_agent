@@ -293,23 +293,61 @@ File 2 (${file2}):
 Schema: ${JSON.stringify(schema2, null, 2)}
 Content Sample: ${content2.substring(0, 1000)}${content2.length > 1000 ? '...' : ''}
 
-Please:
-1. Analyze both schemas and identify common/matching fields
-2. Determine if and how these datasets can be meaningfully merged
-3. If merge is possible:
-   - Identify the best matching fields to use as keys
-   - Explain how the data should be combined
-   - Provide the merged data structure
-4. If merge is not possible, explain why in detail
+Follow these steps for analysis and merging:
 
-Return your response as a JSON object with these fields:
-- canMerge: boolean
-- reason: string (explanation of merge possibility or impossibility)
-- matchingFields: string[] (if found)
-- mergeStrategy: string (if applicable)
-- mergedData: array (if merge successful)
-- errors: string[] (if any issues found)
-`
+1. Schema Analysis:
+   - List all fields from both datasets
+   - Identify data types of each field
+   - Find exact and similar field names
+   - Detect nested structures and arrays
+
+2. Data Compatibility Check:
+   - Compare field values and formats
+   - Identify primary keys and unique identifiers
+   - Check for data type conflicts
+   - Validate value ranges and patterns
+
+3. Merge Strategy:
+   - Define primary joining keys
+   - Handle duplicate field names
+   - Resolve data type conflicts
+   - Specify field mapping rules
+   - Determine array merging approach
+
+4. Data Transformation:
+   - Create unified field names
+   - Convert data types if needed
+   - Normalize date formats
+   - Handle missing values
+
+Return a detailed JSON response with:
+{
+  "canMerge": boolean,
+  "reason": "detailed explanation",
+  "matchingFields": ["field1", "field2"],
+  "mergeStrategy": {
+    "primaryKey": "field_name",
+    "fieldMapping": {
+      "source_field": "target_field"
+    },
+    "transformRules": {
+      "field": "transformation_rule"
+    }
+  },
+  "mergedData": [
+    // Combined data with transformed fields
+  ],
+  "errors": [
+    // Any issues found during analysis
+  ]
+}
+
+Ensure the merged output:
+- Maintains data integrity
+- Preserves all relevant information
+- Uses consistent naming
+- Handles nested structures properly
+- Includes all unique fields from both sources`
       }],
       temperature: 0.1,
       response_format: { type: "json_object" }

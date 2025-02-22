@@ -17,34 +17,46 @@ export async function POST(req: NextRequest) {
 
         const savedFiles = [];
         const collection = await getCollection('filenames');
+        
+        // Get existing filenames from database
+        const existingDoc = await collection.findOne({});
+        const existingFiles = existingDoc?.nameoffiles || [];
 
         for (const file of files) {
+            // Skip if file already exists in database
+            if (existingFiles.includes(file.name)) {
+                continue;
+            }
+
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
 
-            // Save file to the sample_files directory
             const filePath = path.join(process.cwd(), 'app/agents/sample_files', file.name);
             await writeFile(filePath, buffer);
             savedFiles.push(file.name);
         }
 
-        // Update database with new filenames
-        await collection.updateOne(
-            {},
-            {
-                $push: {
-                    nameoffiles: {
-                        $each: savedFiles as string[]
-                    }
-                } as any,
-                $setOnInsert: { createdAt: new Date() },
-                $set: { lastUpdated: new Date() }
-            },
-            { upsert: true }
-        );
+        if (savedFiles.length > 0) {
+            // Update database only with new filenames
+            await collection.updateOne(
+                {},
+                {
+                    $push: {
+                        nameoffiles: {
+                            $each: savedFiles
+                        }
+                    } as any,
+                    $setOnInsert: { createdAt: new Date() },
+                    $set: { lastUpdated: new Date() }
+                },
+                { upsert: true }
+            );
+        }
 
         return NextResponse.json({
-            message: `Successfully uploaded ${savedFiles.length} files`,
+            message: savedFiles.length > 0 
+                ? `Successfully uploaded ${savedFiles.length} files` 
+                : "No new files to upload",
             files: savedFiles
         });
 

@@ -121,7 +121,7 @@ export async function runSchemaDiscoveryAgent(
                 break;
               case "understand_schema":
                 result = await understand_schema(args.content, args.file_type);
-                break;  
+                break;
               case "display_file_content":
                 result = await display_file_content(args.filename, args.data_points);
                 break;
@@ -130,7 +130,7 @@ export async function runSchemaDiscoveryAgent(
                 break;
               case "merge_data":
                 result = await merge_data(
-                  args.file1, 
+                  args.file1,
                   args.file2,
                   args.schema1,
                   args.schema2,
@@ -175,13 +175,13 @@ export async function runSchemaDiscoveryAgent(
           typeof assistantMessage.content === "string"
             ? assistantMessage.content
             : (assistantMessage.content as ChatCompletionContentPart[])[0]
-                .type === "text"
-            ? (
+              .type === "text"
+              ? (
                 assistantMessage.content as ChatCompletionContentPart & {
                   text: string;
                 }
               ).text
-            : JSON.stringify(assistantMessage.content[0]);
+              : JSON.stringify(assistantMessage.content[0]);
         return content;
       }
       step++;
